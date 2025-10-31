@@ -1,0 +1,2 @@
+# Dio_Santander_Open_Academy_funcionamento_de_Ransomware_e_Keylogger
+Desenvolvimento de duas ferramentas educacionais de malware: um ransomware e um keylogger. O objetivo foi compreender os mecanismos de criptografia, captura de dados e exfiltração de informações, sempre em um ambiente isolado e controlado para fins didáticos e de conscientização em cibersegurança. Todas as implementações foram realizadas em Python,
